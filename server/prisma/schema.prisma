@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String        @id @unique @default(cuid())
+  firstname               String
+  lastname                String?
+  email                   String        @unique
+  password                String
+  phone                   String?
+  bio                     String?
+  linkedIn                String?
+  twitter                 String?
+  newsletter_subscription Boolean       @default(false)
+  events                  Event[]
+  transactions            Transaction[]
+  wishlist                Wishlist[]
+  organizer               Organizer[]
+  chatsInitiated          Chat[]        @relation(name: "UserChats")
+  chatsReceived           Chat[]        @relation(name: "OrganizerChats")
+  sentMessages            Message[]     @relation(name: "SentMessages")
+  receivedMessages        Message[]     @relation(name: "ReceivedMessages")
+  created_at              DateTime      @default(now())
+  updated_at              DateTime      @updatedAt
+}
+
+model Event {
+  id                    String        @id @default(cuid())
+  title                 String
+  type                  String
+  category              String
+  description           String
+  vip_ticket_price      Int
+  vip_tickets_sold      Int
+  vip_tickets_count     Int
+  general_ticket_price  Int
+  general_tickets_sold  Int
+  general_tickets_count Int
+  date                  DateTime
+  time_frame            Json
+  images                String[]
+  location              Location[]
+  organizer_details     Organizer[]
+  creatorId             String
+  creator               User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  wishlist              Wishlist[]
+  chats                 Chat[]        @relation(name: "EventChats")
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @default(now()) @updatedAt
+  isDeleted             Boolean       @default(false)
+}
+
+model Location {
+  id      String @id @default(cuid())
+  venue   String
+  city    String
+  country String
+  eventId String @unique
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Organizer {
+  id      String @id @default(cuid())
+  phone   String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId String @unique
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id])
+  amount         Int
+  ticket_details Ticket[]
+  created_at     DateTime @default(now())
+}
+
+model Ticket {
+  id              String      @id @default(cuid())
+  transactionId   String
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+  ticket_quantity Int
+  ticket_category String
+  ticket_price    Int
+  attendees       Attendee[]
+  payment_type    String
+}
+
+model Attendee {
+  id       String @id @default(cuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  name     String
+  gender   String
+  age      Int
+}
+
+model Wishlist {
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  eventId String?
+  event   Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  addedAt DateTime @default(now())
+}
+
+model Chat {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(name: "UserChats", fields: [userId], references: [id], onDelete: Cascade)
+  organizerId String
+  organizer   User      @relation(name: "OrganizerChats", fields: [organizerId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       Event     @relation(name: "EventChats", fields: [eventId], references: [id])
+  messages    Message[]
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  chatId     String
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  sender     User     @relation(fields: [senderId], references: [id], name: "SentMessages")
+  receiverId String
+  receiver   User     @relation(fields: [receiverId], references: [id], name: "ReceivedMessages")
+  text       String
+  seen       Boolean
+  createdAt  DateTime @default(now())
+}
