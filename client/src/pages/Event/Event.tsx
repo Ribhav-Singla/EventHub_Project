@@ -13,6 +13,7 @@ import Wishlist from "../../components/Wishlist/Wishlist";
 import { extractTimeRange } from "../../utils";
 import ChatComponent from "../../components/ChatComponent/ChatComponent";
 import { useRecoilValue } from "recoil";
+import QRCodePopup from "../../components/QRCodePopup/QRCodePopup";
 
 function Event() {
   const eventId = useParams().eventId;
@@ -25,10 +26,11 @@ function Event() {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/event/${eventId}`,{
-            headers:{
-              Authorization: `${localStorage.getItem('token')}`
-            }
+          `${import.meta.env.VITE_BACKEND_URL}/event/${eventId}`,
+          {
+            headers: {
+              Authorization: `${localStorage.getItem("token")}`,
+            },
           }
         );
         setEvent(response.data.event);
@@ -59,7 +61,10 @@ function Event() {
 
   return (
     <div>
-      <section id="eventDetails" className="min-h-screen bg-gradient-to-b from-white to-gray-100">
+      <section
+        id="eventDetails"
+        className="min-h-screen bg-gradient-to-b from-white to-gray-100"
+      >
         {/* Event Header Banner */}
         <div className="relative h-[35vh] bg-[#000a26]">
           <div className="absolute inset-0"></div>
@@ -91,7 +96,7 @@ function Event() {
             {/* Left Column - Event Information */}
             <div className="lg:w-2/3 space-y-8">
               <EventDetails
-                title = {event.title}
+                title={event.title}
                 description={event.description}
                 date={event.date}
                 time_frame={event.time_frame}
@@ -117,6 +122,13 @@ function Event() {
                 event_time={extractTimeRange(event.time_frame)}
                 event_venue={`${event.location[0].venue}, ${event.location[0].city}, ${event.location[0].country},`}
               />
+              <div className="">
+                <QRCodePopup
+                  title={event.title}
+                  url={`${window.location.origin}/event/${eventId}`}
+                />
+              </div>
+
               <div className="bg-white rounded-lg shadow-lg p-6 mt-8 animate__fadeIn">
                 <EventTimer date={event.date} />
               </div>
