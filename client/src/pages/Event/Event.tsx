@@ -91,6 +91,7 @@ function Event() {
             {/* Left Column - Event Information */}
             <div className="lg:w-2/3 space-y-8">
               <EventDetails
+                title = {event.title}
                 description={event.description}
                 date={event.date}
                 time_frame={event.time_frame}

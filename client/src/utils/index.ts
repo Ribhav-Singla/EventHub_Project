@@ -31,8 +31,8 @@ export const publishEvent = async (data: EVENT_TYPE) => {
             description: slot.description.trim(),
         }));
         const images_url = await uploadImages(data.images)
-        if(images_url.urls.length == 0){
-            throw new Error ("Upload atleast 1 image.")
+        if (images_url.urls.length == 0) {
+            throw new Error("Upload atleast 1 image.")
         }
         data = {
             ...data,
@@ -71,8 +71,8 @@ export const updateEvent = async (data: EVENT_TYPE) => {
         if (data.images && data.images.some((image) => typeof image !== "string")) {
             images_url = await uploadImages(data.images.filter((image) => typeof image !== "string"));
         }
-        if(images_url.urls.length == 0){
-            throw new Error ("Upload atleast 1 image.")
+        if (images_url.urls.length == 0) {
+            throw new Error("Upload atleast 1 image.")
         }
         data = {
             ...data,
@@ -251,6 +251,44 @@ export function stringAvatar(name: string) {
         children: firstInitial + (secondInitial || ""),
     };
 }
+
+export const formatChatTime = (timestamp: string | number | Date): string => {
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+
+    const isSameDay = messageDate.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    if (isSameDay) {
+        return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+    } else {
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(now.getDate() - 7);
+
+        if (messageDate > oneWeekAgo) {
+            return messageDate.toLocaleDateString('en-US', { weekday: 'long' }); // e.g., Friday
+        } else {
+            return messageDate.toLocaleDateString(); // e.g., 3/15/2025
+        }
+    }
+};
+
+export function convertTo24Hour(time12h: string): string {
+    const [time, modifier] = time12h.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) {
+        hours += 12;
+    } else if (modifier === "AM" && hours === 12) {
+        hours = 0;
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
 
 export const Blogs = [
     {

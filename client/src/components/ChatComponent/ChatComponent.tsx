@@ -157,7 +157,9 @@ function ChatComponent({
               <div className="flex items-center space-x-2">
                 <Avatar {...stringAvatar(`${organizerEmail} `)} />
                 <span className="font-semibold text-sm sm:text-base">
-                  Help Chat
+                  {organizerEmail.charAt(0).toUpperCase() +
+                    organizerEmail.slice(1, organizerEmail.indexOf("@"))}
+                  <p className="text-xs text-white">Organizer</p>
                 </span>
               </div>
               <button

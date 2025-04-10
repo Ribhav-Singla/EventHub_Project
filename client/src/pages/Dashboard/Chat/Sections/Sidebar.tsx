@@ -3,7 +3,7 @@ import axios from "axios";
 import { useRecoilState } from "recoil";
 import { chatState } from "../../../../recoil";
 import { useSocket } from "../../../../lib/SocketProvider";
-import { stringAvatar } from "../../../../utils";
+import { formatChatTime, stringAvatar } from "../../../../utils";
 import { Avatar } from "@mui/material";
 
 export default function Sidebar({
@@ -178,7 +178,7 @@ export default function Sidebar({
             <div className="flex flex-col items-end">
               {chat.messages.length > 0 && (
                 <span className="text-xs text-gray-300">
-                  {new Date(chat.messages[0].createdAt).toLocaleTimeString()}
+                  {formatChatTime(chat.messages[0].createdAt)}
                 </span>
               )}
             </div>

@@ -1,5 +1,5 @@
 import { LOCATION_TYPE, TIME_FRAME_TYPE } from "../../../recoil";
-import { extractTimeRange, formatDate } from "../../../utils";
+import { convertTo24Hour, extractTimeRange, formatDate } from "../../../utils";
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -8,20 +8,28 @@ import {
   TwitterIcon,
   WhatsappIcon,
 } from "react-share";
+import "add-to-calendar-button";
 
 function EventDetails({
+  title,
   description,
   date,
   time_frame,
   location,
 }: {
+  title: string;
   description: string;
   date: string;
   time_frame: TIME_FRAME_TYPE[];
   location: LOCATION_TYPE[];
 }) {
   const shareUrl = window.location.href;
-  const title = "Check this out!";
+  const timeRange = extractTimeRange(time_frame);
+  const [startFormatted, endFormatted] = timeRange
+    ? timeRange.split(" - ")
+    : ["", ""];
+  const startTime24 = convertTo24Hour(startFormatted);
+  const endTime24 = convertTo24Hour(endFormatted);
 
   return (
     <div>
@@ -46,18 +54,36 @@ function EventDetails({
             </span>
           </div>
         </div>
-        <div className="flex gap-4 justify-end mt-5">
-          <FacebookShareButton url={shareUrl} title={title}>
-            <FacebookIcon size={32} round />
-          </FacebookShareButton>
+        <div className="flex gap-4 justify-between items-center mt-5">
+          <div>
+            <add-to-calendar-button
+              name={title}
+              options="'Google'"
+              location={`${location[0].venue}, ${location[0].city}, ${location[0].country}`}
+              startDate={date}
+              endDate={date}
+              startTime={startTime24}
+              endTime={endTime24}
+              timeZone="Asia/Kolkata"
+              buttonsList="true"
+              buttonStyle="round"
+              hideBranding="false"
+              label="Add to Calendar"
+            ></add-to-calendar-button>
+          </div>
+          <div className="flex gap-4">
+            <FacebookShareButton url={shareUrl} title={title}>
+              <FacebookIcon size={32} round />
+            </FacebookShareButton>
 
-          <TwitterShareButton url={shareUrl} title={title}>
-            <TwitterIcon size={32} round />
-          </TwitterShareButton>
+            <TwitterShareButton url={shareUrl} title={title}>
+              <TwitterIcon size={32} round />
+            </TwitterShareButton>
 
-          <WhatsappShareButton url={shareUrl} title={title}>
-            <WhatsappIcon size={32} round />
-          </WhatsappShareButton>
+            <WhatsappShareButton url={shareUrl} title={title}>
+              <WhatsappIcon size={32} round />
+            </WhatsappShareButton>
+          </div>
         </div>
       </div>
     </div>
