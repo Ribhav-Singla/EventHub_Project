@@ -138,11 +138,13 @@ function Event() {
               {auth.isAuthenticated &&
                 event.organizer_details?.[0]?.user &&
                 auth.id !== (event.organizer_details[0].user as any).id && (
-                  <ChatComponent
-                    eventId={eventId}
-                    organizerEmail={event.organizer_details[0].user.email}
-                    organizerId={(event.organizer_details[0].user as any).id}
-                  />
+                  <div className="fixed bottom-6 right-6 z-50">
+                    <ChatComponent
+                      eventId={eventId}
+                      organizerEmail={event.organizer_details[0].user.email}
+                      organizerId={(event.organizer_details[0].user as any).id}
+                    />
+                  </div>
                 )}
             </div>
           </div>
