@@ -381,41 +381,43 @@ export function CommentSection({title,description}:{title: string,description:st
                 maxLength={200}
                 rows={3}
               />
-              <button
-                type="button"
-                onClick={generateComment}
-                disabled={isGenerating}
-                className="absolute bottom-2 right-2 bg-purple-500 text-white px-3 py-1 text-sm rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1"
-              >
-                {isGenerating ? (
-                  <>
-                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></span>
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-sparkles"
-                    >
-                      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                      <path d="M5 3v4" />
-                      <path d="M19 17v4" />
-                      <path d="M3 5h4" />
-                      <path d="M17 19h4" />
-                    </svg>
-                    Generate with AI
-                  </>
-                )}
-              </button>
+              <div className="flex justify-end py-2">
+                <button
+                  type="button"
+                  onClick={generateComment}
+                  disabled={isGenerating}
+                  className="bg-purple-500 text-white px-3 py-1 text-sm rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1"
+                >
+                  {isGenerating ? (
+                    <>
+                      <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></span>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-sparkles"
+                      >
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                        <path d="M5 3v4" />
+                        <path d="M19 17v4" />
+                        <path d="M3 5h4" />
+                        <path d="M17 19h4" />
+                      </svg>
+                      Generate with AI
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
             <div className="flex justify-between">
               <button
