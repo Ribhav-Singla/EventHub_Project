@@ -252,6 +252,7 @@ export function CommentSection({title,description}:{title: string,description:st
       setNewComment("");
     } catch (error) {
       console.error(error);
+      toast.error("Error posting comment");
     } finally {
       setPostBtnLoader(false);
     }
@@ -310,6 +311,7 @@ export function CommentSection({title,description}:{title: string,description:st
       setReplyingTo(null);
     } catch (error) {
       console.error(error);
+      toast.error("Error posting reply");
     } finally {
       setReplyBtnLoader(false);
     }
