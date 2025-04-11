@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.eventSchema = exports.organizerDetailsSchema = exports.locationSchema = exports.timeFrameSchema = exports.profileSchema = exports.sendMessageScehma = exports.newsletterScehma = exports.forgotPasswordScehma = exports.loginSchema = exports.signinSchema = void 0;
+exports.commentSchema = exports.eventSchema = exports.organizerDetailsSchema = exports.locationSchema = exports.timeFrameSchema = exports.profileSchema = exports.sendMessageScehma = exports.newsletterScehma = exports.forgotPasswordScehma = exports.loginSchema = exports.signinSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 exports.signinSchema = zod_1.default.object({
     firstname: zod_1.default.string(),
@@ -73,4 +73,8 @@ exports.eventSchema = zod_1.default.object({
     location: zod_1.default.array(exports.locationSchema).nonempty("At least one location is required"),
     images: zod_1.default.array(zod_1.default.string()).optional(),
     organizer_details: zod_1.default.array(exports.organizerDetailsSchema).nonempty("At least one organizer is required"),
+});
+exports.commentSchema = zod_1.default.object({
+    content: zod_1.default.string().max(200),
+    authorId: zod_1.default.string()
 });

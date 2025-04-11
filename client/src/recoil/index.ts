@@ -231,3 +231,11 @@ export interface RECENT_ACTIVITY {
     events: RECENT_EVENT[],
     transactions: RECENT_TRANSACTION[]
 }
+
+export interface Comment {
+    id: string;
+    author: string;
+    content: string;
+    timestamp: string;
+    replies: Comment[];
+  }

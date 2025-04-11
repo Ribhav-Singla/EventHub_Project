@@ -23,6 +23,7 @@
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "lucide-react": "^0.487.0",
     "moment-timezone": "^0.5.46",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",

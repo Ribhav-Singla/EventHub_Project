@@ -14,6 +14,7 @@ import cron from 'node-cron';
 import { chatRouter } from './chat'
 import { restrictGuestActions } from '../../middleware/guest'
 import { forgotPasswordScehma, loginSchema, newsletterScehma, signinSchema } from '../../types'
+import { commentRouter } from './comments'
 
 export const router = express.Router()
 
@@ -410,3 +411,4 @@ router.use('/upload_images', imageRouter)
 router.use('/event', eventRouter)
 router.use('/user', userRouter)
 router.use('/chat', chatRouter)
+router.use('/comments', commentRouter)

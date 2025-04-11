@@ -34,25 +34,29 @@ export default function Publish() {
   });
 
   const onSubmit = async (_: any) => {
-    setBtnLoader(true);
-    const response = !location.pathname.includes("update")
-      ? await toast.promise(publishEvent(eventData), {
-          loading: "Publishing...",
-          success: "Published, redirecting!",
-          error: "Internal server error!",
-        })
-      : await toast.promise(updateEvent(eventData), {
-          loading: "Updating...",
-          success: "Updated, redirecting!",
-          error: "Internal server error!",
-        });
-
-    setBtnLoader(false);
-    setTimeout(() => {
-      if (response.eventId) {
-        navigate(`/event/${response.eventId}`);
-      }
-    }, 500);
+    try {
+      setBtnLoader(true);
+      const response = !location.pathname.includes("update")
+        ? await toast.promise(publishEvent(eventData), {
+            loading: "Publishing...",
+            success: "Published, redirecting!",
+            error: "Internal server error!",
+          })
+        : await toast.promise(updateEvent(eventData), {
+            loading: "Updating...",
+            success: "Updated, redirecting!",
+            error: "Internal server error!",
+          });
+      setTimeout(() => {
+        if (response.eventId) {
+          navigate(`/event/${response.eventId}`);
+        }
+      }, 500);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setBtnLoader(false);
+    }
   };
 
   useEffect(() => {

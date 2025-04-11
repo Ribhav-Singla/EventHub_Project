@@ -54,7 +54,7 @@ function EventDetails({
             </span>
           </div>
         </div>
-        <div className="flex gap-4 justify-between items-center mt-5">
+        <div className="flex sm:flex-row flex-col gap-4 justify-between items-center mt-5">
           <div>
             <add-to-calendar-button
               name={title}

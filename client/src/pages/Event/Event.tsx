@@ -14,6 +14,7 @@ import { extractTimeRange } from "../../utils";
 import ChatComponent from "../../components/ChatComponent/ChatComponent";
 import { useRecoilValue } from "recoil";
 import QRCodePopup from "../../components/QRCodePopup/QRCodePopup";
+import { CommentSection } from "../../components/CommentSection/CommentSection";
 
 function Event() {
   const eventId = useParams().eventId;
@@ -91,7 +92,7 @@ function Event() {
         </div>
 
         {/* Event Details Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Column - Event Information */}
             <div className="lg:w-2/3 space-y-8">
@@ -144,6 +145,21 @@ function Event() {
                   />
                 )}
             </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-10">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column - Event Information */}
+            <div className="lg:w-2/3 space-y-8">
+              <CommentSection
+                title={event.title}
+                description={event.description}
+              />
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:w-1/3"></div>
           </div>
         </div>
       </section>

@@ -34,6 +34,7 @@ model User {
   receivedMessages        Message[]     @relation(name: "ReceivedMessages")
   created_at              DateTime      @default(now())
   updated_at              DateTime      @updatedAt
+  Comment                 Comment[]
 }
 
 model Event {
@@ -61,6 +62,7 @@ model Event {
   created_at            DateTime      @default(now())
   updated_at            DateTime      @default(now()) @updatedAt
   isDeleted             Boolean       @default(false)
+  Comment               Comment[]
 }
 
 model Location {
@@ -145,4 +147,17 @@ model Message {
   text       String
   seen       Boolean
   createdAt  DateTime @default(now())
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content   String
+  timestamp DateTime  @default(now())
+  parentId  String? 
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
 }

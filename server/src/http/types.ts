@@ -88,6 +88,11 @@ export const eventSchema = z.object({
     organizer_details: z.array(organizerDetailsSchema).nonempty("At least one organizer is required"),
 });
 
+export const commentSchema = z.object({
+    content : z.string().max(200),
+    authorId : z.string() 
+})
+
 export interface LOCATION_TYPE {
     venue: string;
     city: string;
