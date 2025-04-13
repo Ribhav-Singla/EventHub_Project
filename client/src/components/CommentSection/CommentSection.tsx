@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageSquare, ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 import { authState, type Comment } from "../../recoil/index";
 import { useRecoilValue } from "recoil";
 import { useParams } from "react-router-dom";
@@ -23,6 +23,11 @@ export function CommentSection({title,description}:{title: string,description:st
     limit: 5,
     skip: 0,
   });
+
+  // Edit state management
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
 
   // Track expanded comments and reply pagination
   const [expandedComments, setExpandedComments] = useState<
@@ -243,10 +248,11 @@ export function CommentSection({title,description}:{title: string,description:st
       );
       const comment: Comment = {
         id: response.data.id,
-        author: response.data.author.firstname,
+        author: response.data.author.firstname + " " + response.data.author.lastname,
         content: response.data.content,
         timestamp: response.data.timestamp,
-        replies: response.data.replies,
+        replies: response.data.replies || [],
+        authorId: authorId, // Store authorId to check ownership later
       };
       setComments([comment, ...comments]);
       setNewComment("");
@@ -284,10 +290,11 @@ export function CommentSection({title,description}:{title: string,description:st
       );
       const reply: Comment = {
         id: response.data.id,
-        author: response.data.author.firstname,
+        author: response.data.author.firstname + " " + response.data.author.lastname,
         content: response.data.content,
         timestamp: response.data.timestamp,
-        replies: response.data.replies,
+        replies: response.data.replies || [],
+        authorId: authorId, // Store authorId to check ownership later
       };
 
       // Ensure the comment is expanded to show the new reply
@@ -314,6 +321,153 @@ export function CommentSection({title,description}:{title: string,description:st
       toast.error("Error posting reply");
     } finally {
       setReplyBtnLoader(false);
+    }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setEditingComment(comment.id);
+    setEditContent(comment.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingComment(null);
+    setEditContent("");
+  };
+
+  const saveEdit = async () => {
+    if (!editingComment || !editContent.trim()) {
+      toast.error("Comment content cannot be empty");
+      return;
+    }
+    
+    const authorId = auth.isAuthenticated ? auth.id : undefined;
+    if (!authorId) {
+      toast.error("You must be logged in to edit comments");
+      return;
+    }
+
+    try {
+      setEditSaving(true);
+      
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/comments/${editingComment}`,
+        {
+          content: editContent,
+          authorId
+        },
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Failed to update comment");
+      }
+
+      // Find if this is a top-level comment or a reply
+      let isReply = false;
+      let parentCommentId = "";
+
+      // Check in top-level comments
+      const topLevelCommentMatch = comments.find(comment => comment.id === editingComment);
+      
+      if (!topLevelCommentMatch) {
+        // Check in replies
+        for (const comment of comments) {
+          const replyMatch = comment.replies.find(reply => reply.id === editingComment);
+          if (replyMatch) {
+            isReply = true;
+            parentCommentId = comment.id;
+            break;
+          }
+        }
+      }
+
+      // Update comment in the state
+      if (isReply) {
+        // Update reply
+        setComments(prevComments => 
+          prevComments.map(comment => {
+            if (comment.id === parentCommentId) {
+              return {
+                ...comment,
+                replies: comment.replies.map(reply => 
+                  reply.id === editingComment 
+                    ? { ...reply, content: editContent } 
+                    : reply
+                )
+              };
+            }
+            return comment;
+          })
+        );
+      } else {
+        // Update top-level comment
+        setComments(prevComments => 
+          prevComments.map(comment => 
+            comment.id === editingComment 
+              ? { ...comment, content: editContent } 
+              : comment
+          )
+        );
+      }
+
+      toast.success("Comment updated successfully");
+      cancelEdit(); // Reset editing state
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      toast.error("Failed to update comment");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const deleteComment = async (commentId: string, isReply: boolean = false) => {
+    if (!auth.isAuthenticated) {
+      toast.error("You must be logged in to delete comments");
+      return;
+    }
+
+    if (!window.confirm(isReply ? "Are you sure you want to delete this reply?" : "Are you sure you want to delete this comment?")) {
+      return;
+    }
+
+    try {
+      const endpoint = isReply 
+        ? `${import.meta.env.VITE_BACKEND_URL}/comments/reply/${commentId}`
+        : `${import.meta.env.VITE_BACKEND_URL}/comments/top/${commentId}`;
+
+      const response = await axios.delete(endpoint, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error("Failed to delete comment");
+      }
+
+      if (isReply) {
+        // Find the parent comment and remove the reply
+        setComments(prevComments => 
+          prevComments.map(comment => ({
+            ...comment,
+            replies: comment.replies.filter(reply => reply.id !== commentId)
+          }))
+        );
+      } else {
+        // Remove the top-level comment
+        setComments(prevComments => 
+          prevComments.filter(comment => comment.id !== commentId)
+        );
+      }
+
+      toast.success(isReply ? "Reply deleted successfully" : "Comment deleted successfully");
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error("Failed to delete comment");
     }
   };
 
@@ -359,6 +513,11 @@ export function CommentSection({title,description}:{title: string,description:st
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Helper function to check if the current user is the comment author
+  const isCommentOwner = (commentAuthorId: string | undefined) => {
+    return auth.isAuthenticated && auth.id === commentAuthorId;
   };
 
   return (
@@ -446,14 +605,65 @@ export function CommentSection({title,description}:{title: string,description:st
                       {new Date(comment.timestamp).toLocaleDateString()}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setReplyingTo(comment.id)}
-                    className="text-blue-500 text-sm hover:text-blue-600"
-                  >
-                    Reply
-                  </button>
+                  <div className="flex gap-2">
+                    {/* Reply button is shown to everyone */}
+                    <button
+                      onClick={() => setReplyingTo(comment.id)}
+                      className="text-blue-500 text-sm hover:text-blue-600"
+                    >
+                      Reply
+                    </button>
+                    
+                    {/* Only show Edit and Delete buttons to comment owner */}
+                    {isCommentOwner(comment.authorId) && (
+                      <>
+                        <button
+                          onClick={() => handleEditComment(comment)}
+                          className="text-green-500 text-sm hover:text-green-600 flex items-center"
+                        >
+                          <Edit size={14} className="mr-1" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteComment(comment.id, false)}
+                          className="text-red-500 text-sm hover:text-red-600 flex items-center"
+                        >
+                          <Trash size={14} className="mr-1" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <p className="text-gray-700 mb-4">{comment.content}</p>
+                
+                {/* Show edit form if this comment is being edited */}
+                {editingComment === comment.id ? (
+                  <div className="mb-4">
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows={3}
+                    />
+                    <div className="mt-2 space-x-2">
+                      <button
+                        onClick={saveEdit}
+                        className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        disabled={editSaving}
+                      >
+                        {editSaving ? "Saving..." : "Save Changes"}
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-700 mb-4">{comment.content}</p>
+                )}
 
                 {replyingTo === comment.id && (
                   <div className="ml-8 mb-4">
@@ -523,13 +733,69 @@ export function CommentSection({title,description}:{title: string,description:st
                                   {reply.author}
                                 </h4>
                                 <p className="text-sm text-gray-500">
-                                  {new Date(
-                                    reply.timestamp
-                                  ).toLocaleDateString()}
+                                  {new Date(reply.timestamp).toLocaleDateString()}
                                 </p>
                               </div>
+                              
+                              <div className="flex gap-2">
+                                {/* Reply button (optional for nested replies) */}
+                                {/* <button
+                                  onClick={() => setReplyingTo(comment.id)}
+                                  className="text-blue-500 text-sm hover:text-blue-600"
+                                >
+                                  Reply
+                                </button> */}
+                                
+                                {/* Only show Edit and Delete buttons to reply owner */}
+                                {isCommentOwner(reply.authorId) && (
+                                  <>
+                                    <button
+                                      onClick={() => handleEditComment(reply)}
+                                      className="text-green-500 text-sm hover:text-green-600 flex items-center"
+                                    >
+                                      <Edit size={14} className="mr-1" />
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => deleteComment(reply.id, true)}
+                                      className="text-red-500 text-sm hover:text-red-600 flex items-center"
+                                    >
+                                      <Trash size={14} className="mr-1" />
+                                      Delete
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-gray-700">{reply.content}</p>
+                            
+                            {/* Show edit form if this reply is being edited */}
+                            {editingComment === reply.id ? (
+                              <div className="mb-4">
+                                <textarea
+                                  value={editContent}
+                                  onChange={(e) => setEditContent(e.target.value)}
+                                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  rows={2}
+                                />
+                                <div className="mt-2 space-x-2">
+                                  <button
+                                    onClick={saveEdit}
+                                    className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                    disabled={editSaving}
+                                  >
+                                    {editSaving ? "Saving..." : "Save Changes"}
+                                  </button>
+                                  <button
+                                    onClick={cancelEdit}
+                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-gray-700">{reply.content}</p>
+                            )}
                           </div>
                         ))}
 
@@ -583,16 +849,13 @@ export function CommentSection({title,description}:{title: string,description:st
                       Loading more...
                     </>
                   ) : (
-                    "View More Comments"
+                    <>
+                      Load more comments
+                      <ChevronDown size={16} />
+                    </>
                   )}
                 </button>
               </div>
-            )}
-
-            {!hasMore && comments.length > 0 && (
-              <p className="text-center text-gray-500 py-2">
-                No more comments to load
-              </p>
             )}
           </div>
         </div>

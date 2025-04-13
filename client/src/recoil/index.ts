@@ -235,6 +235,7 @@ export interface RECENT_ACTIVITY {
 export interface Comment {
     id: string;
     author: string;
+    authorId: string;
     content: string;
     timestamp: string;
     replies: Comment[];
