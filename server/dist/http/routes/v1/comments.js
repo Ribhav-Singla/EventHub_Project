@@ -134,6 +134,7 @@ exports.commentRouter.get("/:eventId", (req, res) => __awaiter(void 0, void 0, v
         replies: comment.replies.map(reply => ({
             id: reply.id,
             author: `${reply.author.firstname} ${reply.author.lastname}`,
+            authorId: reply.author.id,
             content: reply.content,
             timestamp: reply.timestamp,
             replies: [],

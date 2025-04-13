@@ -132,6 +132,7 @@ commentRouter.get("/:eventId", async (req, res) => {
         replies: comment.replies.map(reply => ({
             id: reply.id,
             author: `${reply.author.firstname} ${reply.author.lastname}`,
+            authorId: reply.author.id,
             content: reply.content,
             timestamp: reply.timestamp,
             replies: [],
