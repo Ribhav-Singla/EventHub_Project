@@ -4,7 +4,7 @@ EventHub is a powerful and interactive platform designed for creating, managing,
 
 With **EventHub**, you can:  
 ✅ Create and manage events with ease  
-✅ Get notified about upcoming events you’re interested in  
+✅ Get notified about the upcoming events you’re interested in  
 ✅ Engage in real-time chat with event organizers  
 ✅ Visualize event analytics and attendee distribution  
 ✅ Experience a smooth and interactive UI/UX  
